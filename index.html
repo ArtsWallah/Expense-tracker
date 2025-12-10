@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Tracker</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">💰 Expense Tracker</div>
+                <div class="header-stats">
+                    <div class="stat-box">
+                        <span class="stat-label">Total Balance</span>
+                        <span class="stat-value" id="totalBalance">$0.00</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Dashboard -->
+        <div class="dashboard">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <div class="add-expense-card">
+                    <h3>Add New Expense</h3>
+                    <form id="expenseForm">
+                        <div class="form-group">
+                            <label for="expenseDate">Date</label>
+                            <input type="date" id="expenseDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="expenseCategory">Category</label>
+                            <select id="expenseCategory" required>
+                                <option value="">Select Category</option>
+                                <option value="Food">🍔 Food</option>
+                                <option value="Transportation">🚗 Transportation</option>
+                                <option value="Entertainment">🎬 Entertainment</option>
+                                <option value="Shopping">🛍️ Shopping</option>
+                                <option value="Utilities">⚡ Utilities</option>
+                                <option value="Healthcare">🏥 Healthcare</option>
+                                <option value="Others">📦 Others</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="expenseDescription">Description</label>
+                            <input type="text" id="expenseDescription" placeholder="Enter description" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="expenseAmount">Amount</label>
+                            <input type="number" id="expenseAmount" step="0.01" placeholder="0.00" required>
+                        </div>
+                        <button type="submit" class="btn-primary">Add Expense</button>
+                    </form>
+                </div>
+
+                <!-- Filter Section -->
+                <div class="filter-card">
+                    <h3>Filters</h3>
+                    <div class="form-group">
+                        <label for="filterCategory">Category</label>
+                        <select id="filterCategory">
+                            <option value="">All Categories</option>
+                            <option value="Food">🍔 Food</option>
+                            <option value="Transportation">🚗 Transportation</option>
+                            <option value="Entertainment">🎬 Entertainment</option>
+                            <option value="Shopping">🛍️ Shopping</option>
+                            <option value="Utilities">⚡ Utilities</option>
+                            <option value="Healthcare">🏥 Healthcare</option>
+                            <option value="Others">📦 Others</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="filterMonth">Month</label>
+                        <input type="month" id="filterMonth">
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="main-content">
+                <!-- Charts Section -->
+                <div class="charts-grid">
+                    <!-- Expenses per Day Chart -->
+                    <div class="chart-card">
+                        <h3>Daily Expenses</h3>
+                        <canvas id="dailyChart"></canvas>
+                    </div>
+
+                    <!-- Category Distribution Pie Chart -->
+                    <div class="chart-card">
+                        <h3>Expenses by Category</h3>
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Summary Cards -->
+                <div class="summary-grid">
+                    <div class="summary-card">
+                        <h4>This Month</h4>
+                        <p class="amount" id="monthlyTotal">$0.00</p>
+                    </div>
+                    <div class="summary-card">
+                        <h4>This Week</h4>
+                        <p class="amount" id="weeklyTotal">$0.00</p>
+                    </div>
+                    <div class="summary-card">
+                        <h4>Today</h4>
+                        <p class="amount" id="todayTotal">$0.00</p>
+                    </div>
+                    <div class="summary-card">
+                        <h4>Average Daily</h4>
+                        <p class="amount" id="averageDaily">$0.00</p>
+                    </div>
+                </div>
+
+                <!-- Expenses List -->
+                <div class="expenses-card">
+                    <div class="expenses-header">
+                        <h3>Recent Expenses</h3>
+                        <button id="sortBtn" class="btn-secondary">Sort by Amount</button>
+                    </div>
+                    <div class="expenses-list" id="expensesList">
+                        <p class="empty-state">No expenses yet. Add one to get started!</p>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

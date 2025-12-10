@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Tracker</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar-nav">
+            <div class="nav-header">
+                <h2>💰 Tracker</h2>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="#dashboard" class="nav-link active" data-section="dashboard">📊 Dashboard</a></li>
+                <li><a href="#add-expense" class="nav-link" data-section="add-expense">➕ Add Expense</a></li>
+                <li><a href="#analytics" class="nav-link" data-section="analytics">📈 Analytics</a></li>
+                <li><a href="#history" class="nav-link" data-section="history">📜 History</a></li>
+                <li><a href="#settings" class="nav-link" data-section="settings">⚙️ Settings</a></li>
+            </ul>
+        </nav>
+
+        <div class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <div class="header-left">
+                    <h1>Expense Tracker</h1>
+                </div>
+                <div class="header-right">
+                    <div class="month-switcher">
+                        <button id="prevMonth">◀</button>
+                        <span id="currentMonth">December 2025</span>
+                        <button id="nextMonth">▶</button>
+                    </div>
+                    <div class="currency-selector">
+                        <label for="currencySelect">Currency:</label>
+                        <select id="currencySelect">
+                            <option value="USD">$ USD</option>
+                            <option value="EUR">€ EUR</option>
+                            <option value="GBP">£ GBP</option>
+                            <option value="INR">₹ INR</option>
+                            <option value="BDT">৳ BDT</option>
+                            <option value="JPY">¥ JPY</option>
+                            <option value="AUD">A$ AUD</option>
+                            <option value="CAD">C$ CAD</option>
+                            <option value="CHF">CHF CHF</option>
+                            <option value="SGD">S$ SGD</option>
+                        </select>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Dashboard Section -->
+            <section id="dashboard-section" class="section active">
+                <!-- Summary Cards -->
+                <div class="summary-grid">
+                    <div class="summary-card fade-in">
+                        <div class="card-icon">📅</div>
+                        <h4>This Month</h4>
+                        <p class="amount" id="monthlyTotal">$0.00</p>
+                    </div>
+                    <div class="summary-card fade-in">
+                        <div class="card-icon">📆</div>
+                        <h4>This Week</h4>
+                        <p class="amount" id="weeklyTotal">$0.00</p>
+                    </div>
+                    <div class="summary-card fade-in">
+                        <div class="card-icon">📍</div>
+                        <h4>Today</h4>
+                        <p class="amount" id="todayTotal">$0.00</p>
+                    </div>
+                    <div class="summary-card fade-in">
+                        <div class="card-icon">📊</div>
+                        <h4>Daily Average</h4>
+                        <p class="amount" id="averageDaily">$0.00</p>
+                    </div>
+                </div>
+
+                <!-- Charts Section -->
+                <div class="charts-grid">
+                    <div class="chart-card fade-in">
+                        <h3>Daily Expenses</h3>
+                        <canvas id="dailyChart"></canvas>
+                    </div>
+                    <div class="chart-card fade-in">
+                        <h3>Expenses by Category</h3>
+                        <div id="categoryChartContainer">
+                            <canvas id="categoryChart"></canvas>
+                            <p id="emptyChartMessage" class="empty-chart-message" style="display: none;">No data available</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Expenses Summary -->
+                <div class="summary-section fade-in">
+                    <h3>Recent Expenses Summary</h3>
+                    <div class="summary-stats">
+                        <div class="stat">
+                            <span class="stat-label">Total Entries</span>
+                            <span class="stat-value" id="summaryCount">0</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">Total Amount</span>
+                            <span class="stat-value" id="summaryTotal">$0.00</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">Highest Expense</span>
+                            <span class="stat-value" id="summaryHighest">$0.00</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Add Expense Section -->
+            <section id="add-expense-section" class="section">
+                <div class="form-container fade-in">
+                    <h2>Add New Expense</h2>
+                    <form id="expenseForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="expenseDate">Date *</label>
+                                <input type="date" id="expenseDate" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="paymentMethod">Payment Method *</label>
+                                <select id="paymentMethod" required>
+                                    <option value="">Select Method</option>
+                                    <option value="Cash">💵 Cash</option>
+                                    <option value="UPI">📱 UPI</option>
+                                    <option value="Card">💳 Card</option>
+                                    <option value="Bank">🏦 Bank</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="wallet">Wallet *</label>
+                                <select id="wallet" required>
+                                    <option value="">Select Wallet</option>
+                                    <option value="Cash">Cash</option>
+                                    <option value="Bank">Bank</option>
+                                    <option value="Paytm">Paytm</option>
+                                    <option value="Credit Card">Credit Card</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="expenseAmount">Amount *</label>
+                                <div class="input-with-symbol">
+                                    <span class="currency-symbol" id="amountSymbol">$</span>
+                                    <input type="number" id="expenseAmount" step="0.01" placeholder="0.00" required>
+                                </div>
+                                <span class="error-message" id="amountError"></span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Categories (Select one or more) *</label>
+                            <div class="checkbox-grid">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="categories" value="Food"> 🍔 Food
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="categories" value="Transportation"> 🚗 Transportation
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="categories" value="Entertainment"> 🎬 Entertainment
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="categories" value="Shopping"> 🛍️ Shopping
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="categories" value="Utilities"> ⚡ Utilities
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="categories" value="Healthcare"> 🏥 Healthcare
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="categories" value="Others"> 📦 Others
+                                </label>
+                            </div>
+                            <span class="error-message" id="categoryError"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="expenseDescription">Description *</label>
+                            <input type="text" id="expenseDescription" placeholder="Enter description (minimum 2 characters)" required>
+                            <span class="error-message" id="descriptionError"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="receipt">Receipt/Bill (Optional)</label>
+                            <input type="file" id="receipt" accept="image/*,.pdf">
+                            <small>Upload a receipt or bill image/PDF for reference</small>
+                        </div>
+
+                        <button type="submit" class="btn-primary">💾 Add Expense</button>
+                        <div id="formMessage" class="form-message"></div>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Analytics Section -->
+            <section id="analytics-section" class="section">
+                <div class="analytics-container fade-in">
+                    <h2>Budget Analysis</h2>
+                    <div class="budget-grid">
+                        <!-- Budget items will be generated by JavaScript -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- History Section -->
+            <section id="history-section" class="section">
+                <div class="history-container fade-in">
+                    <div class="history-header">
+                        <h2>Recent Expenses</h2>
+                        <div class="history-controls">
+                            <button id="downloadPdfBtn" class="btn-secondary">📥 Download PDF Report</button>
+                            <button id="sortBtn" class="btn-secondary">↕️ Sort by Amount</button>
+                        </div>
+                    </div>
+
+                    <div class="filter-section">
+                        <h4>Quick Filters</h4>
+                        <div class="filter-controls">
+                            <div class="filter-group">
+                                <label>Categories:</label>
+                                <div class="checkbox-grid-small">
+                                    <label class="checkbox-label-small">
+                                        <input type="checkbox" name="filterCategories" value="Food"> Food
+                                    </label>
+                                    <label class="checkbox-label-small">
+                                        <input type="checkbox" name="filterCategories" value="Transportation"> Transport
+                                    </label>
+                                    <label class="checkbox-label-small">
+                                        <input type="checkbox" name="filterCategories" value="Entertainment"> Entertainment
+                                    </label>
+                                    <label class="checkbox-label-small">
+                                        <input type="checkbox" name="filterCategories" value="Shopping"> Shopping
+                                    </label>
+                                </div>
+                                <button type="button" id="clearCategoriesBtn" class="btn-clear">Clear</button>
+                            </div>
+
+                            <div class="filter-group">
+                                <label for="filterMonth">Filter by Month:</label>
+                                <input type="month" id="filterMonth">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="expenses-table-container">
+                        <table class="expenses-table">
+                            <thead>
+                                <tr>
+                                    <th class="sortable" data-sort="date">Date ↕</th>
+                                    <th>Categories</th>
+                                    <th>Description</th>
+                                    <th>Payment</th>
+                                    <th class="sortable" data-sort="amount">Amount ↕</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="expensesList">
+                                <tr class="empty-row">
+                                    <td colspan="6" class="empty-state">
+                                        <div class="empty-state-content">
+                                            <span class="empty-icon">📭</span>
+                                            <p>No expenses yet. Start tracking your spending!</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Settings Section -->
+            <section id="settings-section" class="section">
+                <div class="settings-container fade-in">
+                    <h2>Settings</h2>
+                    
+                    <div class="settings-card">
+                        <h3>Wallet Management</h3>
+                        <div class="wallets-list" id="walletsList"></div>
+                    </div>
+
+                    <div class="settings-card">
+                        <h3>Budget Settings</h3>
+                        <div class="budgets-list" id="budgetsList"></div>
+                        <button id="saveBudgetsBtn" class="btn-primary">💾 Save Budgets</button>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
