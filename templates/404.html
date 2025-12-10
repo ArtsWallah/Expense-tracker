@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Page Not Found</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            text-align: center;
+        }
+        .error-container {
+            padding: var(--space-2xl);
+        }
+        .error-code {
+            font-size: 6rem;
+            font-weight: 700;
+            color: var(--color-primary);
+            margin-bottom: var(--space-md);
+        }
+        .error-message {
+            font-size: var(--text-2xl);
+            margin-bottom: var(--space-md);
+        }
+        .error-description {
+            color: var(--text-tertiary);
+            margin-bottom: var(--space-2xl);
+        }
+        .btn {
+            margin: 0 var(--space-md);
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <div class="error-code">404</div>
+        <h1 class="error-message">Page Not Found</h1>
+        <p class="error-description">The page you're looking for doesn't exist.</p>
+        <a href="/" class="btn btn-primary">← Back to Home</a>
+    </div>
+</body>
+</html>

@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Expense Tracker - Manage your finances efficiently">
+    <meta name="theme-color" content="#3b82f6">
+    
+    <title>Expense Tracker - Smart Money Management</title>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/modal.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/animations.css') }}">
+    
+    <!-- Icons (Font Awesome) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <!-- Dark Mode Toggle (Floating Button) -->
+    <button id="themeToggle" class="theme-toggle" title="Toggle dark mode">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <!-- Main Container -->
+    <div class="app-container">
+        
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1 class="logo">
+                    <i class="fas fa-wallet"></i>
+                    <span>ExpenseHub</span>
+                </h1>
+            </div>
+            
+            <nav class="nav-menu">
+                <button class="nav-item active" data-page="dashboard">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Dashboard</span>
+                </button>
+                <button class="nav-item" data-page="add-expense">
+                    <i class="fas fa-plus-circle"></i>
+                    <span>Add Expense</span>
+                </button>
+                <button class="nav-item" data-page="history">
+                    <i class="fas fa-history"></i>
+                    <span>History</span>
+                </button>
+                <button class="nav-item" data-page="analytics">
+                    <i class="fas fa-chart-pie"></i>
+                    <span>Analytics</span>
+                </button>
+                <button class="nav-item" data-page="settings">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </button>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <p class="version">v2.0 Pro</p>
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            
+            <!-- Header -->
+            <header class="app-header">
+                <div class="header-left">
+                    <button id="menuToggle" class="menu-toggle" aria-label="Toggle menu">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    
+                    <div class="month-navigator">
+                        <button id="prevMonth" class="nav-button" title="Previous month">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <span id="monthDisplay" class="month-display">December 2025</span>
+                        <button id="nextMonth" class="nav-button" title="Next month">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="header-right">
+                    <div class="currency-selector">
+                        <i class="fas fa-globe"></i>
+                        <select id="currencySelect">
+                            <option value="USD">USD ($)</option>
+                            <option value="EUR">EUR (€)</option>
+                            <option value="GBP">GBP (£)</option>
+                            <option value="INR" selected>INR (₹)</option>
+                            <option value="BDT">BDT (৳)</option>
+                            <option value="JPY">JPY (¥)</option>
+                            <option value="AUD">AUD (A$)</option>
+                            <option value="CAD">CAD (C$)</option>
+                            <option value="CHF">CHF</option>
+                            <option value="SGD">SGD (S$)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="quick-actions">
+                        <button id="quickAddBtn" class="btn btn-primary btn-sm" title="Quick add expense">
+                            <i class="fas fa-bolt"></i> Quick Add
+                        </button>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Pages Container -->
+            <div class="pages-container">
+                
+                <!-- ===== DASHBOARD PAGE ===== -->
+                <div class="page active" id="dashboard-page">
+                    <div class="page-header">
+                        <h2>Dashboard</h2>
+                        <p class="subtitle">Track your spending at a glance</p>
+                    </div>
+                    
+                    <!-- Summary Cards -->
+                    <div class="summary-grid">
+                        <div class="summary-card">
+                            <div class="card-icon" style="color: #3b82f6;">
+                                <i class="fas fa-calendar-alt"></i>
+                            </div>
+                            <div class="card-content">
+                                <p class="card-label">This Month</p>
+                                <p class="card-value" id="monthlyTotal">₹0.00</p>
+                                <span class="card-detail" id="monthlyCount">0 expenses</span>
+                            </div>
+                        </div>
+                        
+                        <div class="summary-card">
+                            <div class="card-icon" style="color: #10b981;">
+                                <i class="fas fa-circle-notch"></i>
+                            </div>
+                            <div class="card-content">
+                                <p class="card-label">This Week</p>
+                                <p class="card-value" id="weeklyTotal">₹0.00</p>
+                                <span class="card-detail" id="weeklyCount">0 expenses</span>
+                            </div>
+                        </div>
+                        
+                        <div class="summary-card">
+                            <div class="card-icon" style="color: #f59e0b;">
+                                <i class="fas fa-sun"></i>
+                            </div>
+                            <div class="card-content">
+                                <p class="card-label">Today</p>
+                                <p class="card-value" id="todayTotal">₹0.00</p>
+                                <span class="card-detail" id="todayCount">0 expenses</span>
+                            </div>
+                        </div>
+                        
+                        <div class="summary-card">
+                            <div class="card-icon" style="color: #ef4444;">
+                                <i class="fas fa-arrow-trending-up"></i>
+                            </div>
+                            <div class="card-content">
+                                <p class="card-label">Highest</p>
+                                <p class="card-value" id="highestAmount">₹0.00</p>
+                                <span class="card-detail" id="highestCategory">No data</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Budget Progress -->
+                    <div class="budget-section">
+                        <div class="section-header">
+                            <h3>Monthly Budget</h3>
+                            <a href="#" class="link-btn" onclick="changePage('settings'); return false;">
+                                Edit <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </div>
+                        
+                        <div class="budget-bar-container">
+                            <div class="budget-bar">
+                                <div class="budget-fill" id="budgetFill" style="width: 0%"></div>
+                            </div>
+                            <div class="budget-stats">
+                                <span id="budgetSpent">₹0.00</span>
+                                <span class="separator">/</span>
+                                <span id="budgetTotal">₹0.00</span>
+                            </div>
+                        </div>
+                        <p class="budget-message" id="budgetMessage"></p>
+                    </div>
+                    
+                    <!-- Charts -->
+                    <div class="charts-grid">
+                        <div class="chart-card">
+                            <h3>Daily Spending Trend</h3>
+                            <div class="chart-container">
+                                <canvas id="dailyChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <div class="chart-card">
+                            <h3>Spending by Category</h3>
+                            <div class="chart-container">
+                                <canvas id="categoryChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Stats -->
+                    <div class="quick-stats">
+                        <h3>Quick Stats</h3>
+                        <div class="stats-grid">
+                            <div class="stat-box">
+                                <i class="fas fa-shopping-bag"></i>
+                                <div>
+                                    <p class="stat-label">Avg. per Expense</p>
+                                    <p class="stat-value" id="avgPerExpense">₹0.00</p>
+                                </div>
+                            </div>
+                            <div class="stat-box">
+                                <i class="fas fa-list"></i>
+                                <div>
+                                    <p class="stat-label">Total Expenses</p>
+                                    <p class="stat-value" id="totalExpenses">0</p>
+                                </div>
+                            </div>
+                            <div class="stat-box">
+                                <i class="fas fa-percent"></i>
+                                <div>
+                                    <p class="stat-label">Budget Used</p>
+                                    <p class="stat-value" id="budgetUsedPercent">0%</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- ===== ADD EXPENSE PAGE ===== -->
+                <div class="page" id="add-expense-page">
+                    <div class="page-header">
+                        <h2>Add New Expense</h2>
+                        <p class="subtitle">Track your spending with details</p>
+                    </div>
+                    
+                    <div class="form-container">
+                        <form id="expenseForm" class="expense-form">
+                            <div class="form-grid">
+                                <!-- Date -->
+                                <div class="form-group">
+                                    <label for="expenseDate">
+                                        <i class="fas fa-calendar"></i> Date
+                                        <span class="required">*</span>
+                                    </label>
+                                    <input type="date" id="expenseDate" required>
+                                    <span class="error-message" id="dateError"></span>
+                                </div>
+                                
+                                <!-- Category -->
+                                <div class="form-group">
+                                    <label for="expenseCategory">
+                                        <i class="fas fa-tag"></i> Category
+                                        <span class="required">*</span>
+                                    </label>
+                                    <select id="expenseCategory" required>
+                                        <option value="">Select Category</option>
+                                        <option value="Food">🍔 Food</option>
+                                        <option value="Transportation">🚗 Transportation</option>
+                                        <option value="Entertainment">🎬 Entertainment</option>
+                                        <option value="Shopping">🛍️ Shopping</option>
+                                        <option value="Utilities">💡 Utilities</option>
+                                        <option value="Healthcare">🏥 Healthcare</option>
+                                        <option value="Others">📌 Others</option>
+                                    </select>
+                                    <span class="error-message" id="categoryError"></span>
+                                </div>
+                                
+                                <!-- Payment Method -->
+                                <div class="form-group">
+                                    <label for="paymentMethod">
+                                        <i class="fas fa-credit-card"></i> Payment Method
+                                        <span class="required">*</span>
+                                    </label>
+                                    <select id="paymentMethod" required>
+                                        <option value="">Select Method</option>
+                                        <option value="Cash">💵 Cash</option>
+                                        <option value="Card">🏦 Card</option>
+                                        <option value="UPI">📱 UPI</option>
+                                        <option value="Bank Transfer">🏧 Bank Transfer</option>
+                                    </select>
+                                    <span class="error-message" id="paymentError"></span>
+                                </div>
+                                
+                                <!-- Wallet -->
+                                <div class="form-group">
+                                    <label for="wallet">
+                                        <i class="fas fa-wallet"></i> Wallet (Optional)
+                                    </label>
+                                    <select id="wallet">
+                                        <option value="">Select Wallet</option>
+                                        <option value="Cash">Cash</option>
+                                        <option value="Bank">Bank</option>
+                                        <option value="UPI">UPI</option>
+                                        <option value="Credit Card">Credit Card</option>
+                                    </select>
+                                </div>
+                                
+                                <!-- Amount -->
+                                <div class="form-group">
+                                    <label for="expenseAmount">
+                                        <i class="fas fa-rupee-sign"></i> Amount
+                                        <span class="required">*</span>
+                                    </label>
+                                    <div class="amount-input">
+                                        <span class="currency-symbol" id="amountSymbol">₹</span>
+                                        <input type="number" id="expenseAmount" placeholder="0.00" step="0.01" min="0" required>
+                                    </div>
+                                    <span class="error-message" id="amountError"></span>
+                                </div>
+                                
+                                <!-- Description -->
+                                <div class="form-group">
+                                    <label for="expenseDescription">
+                                        <i class="fas fa-pen"></i> Description
+                                        <span class="required">*</span>
+                                    </label>
+                                    <input type="text" id="expenseDescription" placeholder="e.g., Lunch at restaurant" required>
+                                    <span class="error-message" id="descriptionError"></span>
+                                </div>
+                            </div>
+                            
+                            <!-- Receipt Upload -->
+                            <div class="form-group full-width">
+                                <label for="receipt">
+                                    <i class="fas fa-receipt"></i> Receipt (JPG, PNG, PDF - Max 3MB)
+                                </label>
+                                <div class="file-upload">
+                                    <input type="file" id="receipt" accept=".jpg,.jpeg,.png,.pdf">
+                                    <div class="file-preview" id="filePreview"></div>
+                                </div>
+                                <span class="error-message" id="receiptError"></span>
+                            </div>
+                            
+                            <!-- Notes & Tags -->
+                            <div class="form-group full-width">
+                                <label for="notes">
+                                    <i class="fas fa-note-sticky"></i> Notes & Tags
+                                </label>
+                                <input type="text" id="notes" placeholder="Add notes or tags separated by commas">
+                            </div>
+                            
+                            <!-- Form Actions -->
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-check"></i> Add Expense
+                                </button>
+                                <button type="reset" class="btn btn-secondary">
+                                    <i class="fas fa-redo"></i> Clear
+                                </button>
+                            </div>
+                            
+                            <!-- Success Message -->
+                            <div class="form-message success-message" id="successMessage"></div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- ===== HISTORY PAGE ===== -->
+                <div class="page" id="history-page">
+                    <div class="page-header">
+                        <h2>Expense History</h2>
+                        <p class="subtitle">View and manage all your expenses</p>
+                    </div>
+                    
+                    <!-- Table Controls -->
+                    <div class="table-controls">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="searchInput" placeholder="Search expenses...">
+                        </div>
+                        
+                        <div class="filters">
+                            <select id="categoryFilter">
+                                <option value="">All Categories</option>
+                                <option value="Food">🍔 Food</option>
+                                <option value="Transportation">🚗 Transportation</option>
+                                <option value="Entertainment">🎬 Entertainment</option>
+                                <option value="Shopping">🛍️ Shopping</option>
+                                <option value="Utilities">💡 Utilities</option>
+                                <option value="Healthcare">🏥 Healthcare</option>
+                                <option value="Others">📌 Others</option>
+                            </select>
+                            
+                            <select id="paymentFilter">
+                                <option value="">All Payment Methods</option>
+                                <option value="Cash">💵 Cash</option>
+                                <option value="Card">🏦 Card</option>
+                                <option value="UPI">📱 UPI</option>
+                                <option value="Bank Transfer">🏧 Bank Transfer</option>
+                            </select>
+                        </div>
+                        
+                        <div class="export-buttons">
+                            <button id="exportCSV" class="btn btn-secondary btn-sm">
+                                <i class="fas fa-download"></i> CSV
+                            </button>
+                            <button id="exportPDF" class="btn btn-secondary btn-sm">
+                                <i class="fas fa-file-pdf"></i> PDF
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Expense Table -->
+                    <div class="table-responsive">
+                        <table class="expense-table">
+                            <thead>
+                                <tr>
+                                    <th onclick="sortTable('date')">Date <i class="fas fa-sort"></i></th>
+                                    <th onclick="sortTable('category')">Category <i class="fas fa-sort"></i></th>
+                                    <th onclick="sortTable('description')">Description <i class="fas fa-sort"></i></th>
+                                    <th onclick="sortTable('payment_method')">Method <i class="fas fa-sort"></i></th>
+                                    <th onclick="sortTable('amount')">Amount <i class="fas fa-sort"></i></th>
+                                    <th>Receipt</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="expenseTableBody">
+                                <tr class="empty-state">
+                                    <td colspan="7">
+                                        <div class="empty-state-content">
+                                            <i class="fas fa-inbox"></i>
+                                            <p>No expenses yet. <a href="#" onclick="changePage('add-expense'); return false;">Add your first expense →</a></p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Table Summary -->
+                    <div class="table-summary">
+                        <div class="summary-item">
+                            <span class="label">Total Spent:</span>
+                            <span class="value" id="summaryTotal">₹0.00</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="label">Records:</span>
+                            <span class="value" id="summaryCount">0</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="label">Highest:</span>
+                            <span class="value" id="summaryHighest">₹0.00</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- ===== ANALYTICS PAGE ===== -->
+                <div class="page" id="analytics-page">
+                    <div class="page-header">
+                        <h2>Analytics & Insights</h2>
+                        <p class="subtitle">Monitor your budget and spending patterns</p>
+                    </div>
+                    
+                    <div class="analytics-grid" id="analyticsGrid">
+                        <!-- Budget cards will be populated here by JavaScript -->
+                    </div>
+                </div>
+                
+                <!-- ===== SETTINGS PAGE ===== -->
+                <div class="page" id="settings-page">
+                    <div class="page-header">
+                        <h2>Settings</h2>
+                        <p class="subtitle">Manage your preferences and budgets</p>
+                    </div>
+                    
+                    <!-- Wallets Section -->
+                    <div class="settings-section">
+                        <h3><i class="fas fa-wallet"></i> Wallets</h3>
+                        <div class="wallets-list" id="walletsList"></div>
+                    </div>
+                    
+                    <!-- Budget Settings -->
+                    <div class="settings-section">
+                        <h3><i class="fas fa-chart-line"></i> Monthly Budgets</h3>
+                        <form id="budgetForm" class="budget-form">
+                            <div class="budget-grid">
+                                <!-- Budget inputs will be populated here -->
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Save Budgets
+                            </button>
+                            <div class="form-message" id="budgetMessage"></div>
+                        </form>
+                    </div>
+                </div>
+                
+            </div>
+        </main>
+    </div>
+    
+    <!-- Modals -->
+    
+    <!-- Quick Add Modal -->
+    <div class="modal" id="quickAddModal">
+        <div class="modal-content modal-sm">
+            <div class="modal-header">
+                <h3>Quick Add Expense</h3>
+                <button class="modal-close" onclick="closeModal('quickAddModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="quickAddForm">
+                    <div class="form-group">
+                        <input type="number" id="quickAmount" placeholder="Amount" step="0.01" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <select id="quickCategory" required>
+                            <option value="">Category</option>
+                            <option value="Food">🍔 Food</option>
+                            <option value="Transportation">🚗 Transportation</option>
+                            <option value="Entertainment">🎬 Entertainment</option>
+                            <option value="Shopping">🛍️ Shopping</option>
+                            <option value="Utilities">💡 Utilities</option>
+                            <option value="Healthcare">🏥 Healthcare</option>
+                            <option value="Others">📌 Others</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">Add Now</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Receipt Viewer Modal -->
+    <div class="modal" id="receiptModal">
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h3>Receipt Preview</h3>
+                <button class="modal-close" onclick="closeModal('receiptModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <img id="receiptImage" src="" alt="Receipt" style="width: 100%; height: auto;">
+            </div>
+        </div>
+    </div>
+    
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+    
+    <!-- Scripts -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/api.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/ui.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+</body>
+</html>
