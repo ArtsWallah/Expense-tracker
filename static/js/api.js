@@ -279,14 +279,15 @@ async function handleQuickAdd(event) {
 let budgetUpdateTimeout;
 function debouncedBudgetUpdate(event) {
     event.preventDefault();
+    console.log('Budget form submitted');
     clearTimeout(budgetUpdateTimeout);
     
     budgetUpdateTimeout = setTimeout(() => {
-        handleBudgetUpdate(event);
+        handleBudgetUpdate();
     }, 500);
 }
 
-async function handleBudgetUpdate(event) {
+async function handleBudgetUpdate() {
     const budgetData = {};
     const categories = ['Food', 'Transportation', 'Entertainment', 'Shopping', 'Utilities', 'Healthcare', 'Others'];
     
@@ -303,6 +304,8 @@ async function handleBudgetUpdate(event) {
         budgetData.monthly_limit = parseFloat(monthlyLimitInput.value) || 0;
     }
     
+    console.log('Saving budgets:', budgetData);
+    
     try {
         const response = await fetch('/api/budgets', {
             method: 'POST',
@@ -313,6 +316,7 @@ async function handleBudgetUpdate(event) {
         });
         
         const data = await response.json();
+        console.log('Budget save response:', data);
         
         if (data.success) {
             app.budgets = data.data;
@@ -320,14 +324,17 @@ async function handleBudgetUpdate(event) {
             app.clearCache('stats'); // Clear dashboard cache to force refresh
             app.clearCache('daily_chart');
             app.clearCache('category_chart');
-            showToast('Budgets updated successfully!', 'success');
-            app.updateDashboard();
+            showToast('✓ Budgets updated successfully!', 'success');
+            console.log('Budgets saved successfully');
+            // Optionally update dashboard
+            setTimeout(() => app.updateDashboard(), 100);
         } else {
-            showToast(data.error || 'Failed to update', 'error');
+            showToast(data.error || 'Failed to update budgets', 'error');
+            console.error('Budget update error:', data.error);
         }
     } catch (error) {
         console.error('Error updating budgets:', error);
-        showToast('Error updating budgets', 'error');
+        showToast('Error updating budgets: ' + error.message, 'error');
     }
 }
 

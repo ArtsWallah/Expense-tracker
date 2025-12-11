@@ -181,7 +181,17 @@ const app = {
         // Budget form (use debounced handler)
         const budgetForm = document.getElementById('budgetForm');
         if (budgetForm) {
-            budgetForm.addEventListener('submit', (e) => debouncedBudgetUpdate(e));
+            console.log('Budget form found, attaching listener');
+            budgetForm.addEventListener('submit', function(e) {
+                console.log('Budget form submitted');
+                if (typeof debouncedBudgetUpdate === 'function') {
+                    debouncedBudgetUpdate(e);
+                } else {
+                    console.error('debouncedBudgetUpdate function not found');
+                }
+            });
+        } else {
+            console.warn('Budget form not found');
         }
         
         // Date picker default to today

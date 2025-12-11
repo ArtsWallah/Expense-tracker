@@ -357,28 +357,43 @@ app.updateExpensesList = async function() {
 // ===== SETTINGS PAGE =====
 
 app.loadSettingsUI = async function() {
-    await app.loadBudgets();
-    loadBudgetsUI();
-    loadWalletsUI();
+    try {
+        await app.loadBudgets();
+        loadBudgetsUI();
+        loadWalletsUI();
+    } catch (error) {
+        console.error('Error loading settings UI:', error);
+    }
 };
 
 function loadBudgetsUI() {
     const budgetGrid = document.querySelector('.budget-grid');
-    if (!budgetGrid) return;
+    if (!budgetGrid) {
+        console.warn('Budget grid not found');
+        return;
+    }
     
     const categories = ['Food', 'Transportation', 'Entertainment', 'Shopping', 'Utilities', 'Healthcare', 'Others'];
     
-    budgetGrid.innerHTML = categories.map(category => `
-        <div class="budget-input-group">
-            <label>${getCategoryEmoji(category)} ${category}</label>
-            <input type="number" data-category="${category}" value="${app.budgets[category] || 0}" min="0" step="0.01">
-        </div>
-    `).join('');
+    try {
+        budgetGrid.innerHTML = categories.map(category => `
+            <div class="budget-input-group">
+                <label>${getCategoryEmoji(category)} ${category}</label>
+                <input type="number" data-category="${category}" value="${app.budgets[category] || 0}" min="0" step="0.01" placeholder="0.00">
+            </div>
+        `).join('');
+    } catch (error) {
+        console.error('Error rendering budget grid:', error);
+    }
     
     // Load monthly budget limit if exists
     const monthlyLimitInput = document.getElementById('monthlyBudgetLimit');
     if (monthlyLimitInput) {
-        monthlyLimitInput.value = app.budgets.monthly_limit || 0;
+        const monthlyLimit = app.budgets.monthly_limit || 0;
+        monthlyLimitInput.value = monthlyLimit > 0 ? monthlyLimit : '';
+        console.log('Monthly budget limit loaded:', monthlyLimit);
+    } else {
+        console.warn('Monthly budget limit input not found');
     }
 }
 
