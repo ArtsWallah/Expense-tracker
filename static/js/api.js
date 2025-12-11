@@ -7,6 +7,7 @@
 
 async function handleAddExpense(event) {
     event.preventDefault();
+    console.log('Add expense form submitted');
     
     // Clear previous messages
     const successMsg = document.getElementById('successMessage');
@@ -15,9 +16,12 @@ async function handleAddExpense(event) {
     }
     
     // Validate form
+    console.log('Validating form...');
     if (!validateForm()) {
+        console.error('Form validation failed');
         return;
     }
+    console.log('Form validation passed');
     
     // Get form data
     const form = document.getElementById('expenseForm');
@@ -34,6 +38,7 @@ async function handleAddExpense(event) {
             document.getElementById('notes').value.split(',').map(t => t.trim()) : []
     };
     
+    console.log('Expense data:', expenseData);
     try {
         // Add expense
         const result = await app.addExpense(expenseData);
@@ -77,8 +82,12 @@ async function handleAddExpense(event) {
 // ===== FORM VALIDATION =====
 
 function validateForm() {
+    console.log('validateForm() called');
     const form = document.getElementById('expenseForm');
-    if (!form) return false;
+    if (!form) {
+        console.error('Expense form not found');
+        return false;
+    }
     
     let isValid = true;
     clearFormErrors();
@@ -99,9 +108,12 @@ function validateForm() {
     
     // Payment method validation
     const paymentMethod = document.getElementById('paymentMethod');
-    if (!paymentMethod.value) {
+    if (!paymentMethod || !paymentMethod.value || paymentMethod.value.trim() === '') {
         showFieldError('paymentError', 'Payment method is required');
+        console.error('Payment method validation failed:', paymentMethod?.value);
         isValid = false;
+    } else {
+        console.log('Payment method selected:', paymentMethod.value);
     }
     
     // Description validation
