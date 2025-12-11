@@ -113,33 +113,14 @@
     overflow: hidden;
 }
 
-.btn::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(255, 255, 255, 0.2);
-    transition: left 0.5s ease;
-}
-
-.btn:hover::before {
-    left: 100%;
-}
-
 .btn:active {
-    transform: scale(0.98);
+    opacity: 0.9;
 }
 
 /* ===== CARD ANIMATIONS ===== */
 
 .summary-card {
     animation: fadeIn 0.3s ease;
-}
-
-.summary-card:hover {
-    animation: none;
 }
 
 /* ===== LOADING STATE ===== */

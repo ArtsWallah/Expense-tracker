@@ -37,8 +37,8 @@
     --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.3);
     
     /* Transitions */
-    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-fast: all 0.15s ease-in-out;
+    --transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+    --transition-fast: background-color 0.15s ease, color 0.15s ease;
     
     /* Spacing */
     --space-xs: 0.25rem;
@@ -93,7 +93,7 @@ body {
     background-color: var(--bg-primary);
     color: var(--text-primary);
     line-height: 1.6;
-    transition: var(--transition);
+    transition: background-color 0.3s ease, color 0.3s ease;
     overflow: hidden;
     height: 100vh;
     width: 100%;
@@ -181,9 +181,10 @@ a:hover {
     border: none;
     border-radius: var(--radius-lg);
     cursor: pointer;
-    transition: var(--transition-fast);
+    transition: background-color 0.15s ease, color 0.15s ease;
     font-size: var(--text-base);
     border-left: 3px solid transparent;
+    will-change: background-color, color;
 }
 
 .nav-item:hover {
@@ -249,7 +250,8 @@ a:hover {
     width: 44px;
     height: 44px;
     border-radius: var(--radius-lg);
-    transition: var(--transition-fast);
+    transition: background-color 0.15s ease;
+    will-change: background-color;
 }
 
 .menu-toggle:hover {
@@ -269,7 +271,8 @@ a:hover {
     padding: var(--space-sm) var(--space-md);
     border-radius: var(--radius-md);
     cursor: pointer;
-    transition: var(--transition-fast);
+    transition: background-color 0.15s ease;
+    will-change: background-color;
 }
 
 .nav-button:hover {
@@ -377,12 +380,12 @@ a:hover {
     display: flex;
     gap: var(--space-lg);
     align-items: flex-start;
-    transition: var(--transition);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
     cursor: pointer;
+    will-change: box-shadow, border-color;
 }
 
 .summary-card:hover {
-    transform: translateY(-4px);
     box-shadow: var(--shadow-lg);
     border-color: var(--color-primary);
 }
@@ -739,8 +742,9 @@ a:hover {
     font-size: var(--text-base);
     font-weight: 500;
     cursor: pointer;
-    transition: var(--transition-fast);
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
     white-space: nowrap;
+    will-change: background-color, box-shadow;
 }
 
 .btn-primary {
@@ -750,7 +754,6 @@ a:hover {
 
 .btn-primary:hover {
     background-color: var(--color-primary-dark);
-    transform: translateY(-2px);
     box-shadow: var(--shadow-md);
 }
 
@@ -1108,12 +1111,12 @@ a:hover {
     font-size: var(--text-lg);
     cursor: pointer;
     box-shadow: var(--shadow-lg);
-    transition: var(--transition);
+    transition: box-shadow 0.2s ease;
+    will-change: box-shadow;
     z-index: 99;
 }
 
 .theme-toggle:hover {
-    transform: scale(1.1);
     box-shadow: var(--shadow-xl);
 }
 

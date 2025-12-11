@@ -1,0 +1,137 @@
+/* ===========================
+   PERFORMANCE OPTIMIZATIONS
+   Ensures smooth hover states and interactions
+   =========================== */
+
+/* Prevent layout thrashing */
+* {
+    contain: layout;
+}
+
+/* Optimize commonly hovered elements */
+.nav-item,
+.btn,
+.nav-button,
+.menu-toggle,
+.summary-card,
+.theme-toggle {
+    will-change: auto;
+}
+
+.nav-item:hover,
+.btn:hover,
+.nav-button:hover,
+.menu-toggle:hover,
+.summary-card:hover,
+.theme-toggle:hover {
+    will-change: background-color, box-shadow, border-color;
+}
+
+/* GPU acceleration for smooth interactions */
+.nav-menu,
+.modal-content,
+.pages-container {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+}
+
+/* Optimize scrolling performance */
+.pages-container {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+}
+
+/* Disable pointer events on non-interactive elements during transitions */
+.loading {
+    pointer-events: none;
+}
+
+/* Optimize form inputs */
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    transition: box-shadow 0.15s ease;
+}
+
+/* Reduce repaints on frequently changed elements */
+.budget-fill {
+    contain: content;
+}
+
+/* Optimize modal performance */
+.modal {
+    will-change: opacity;
+}
+
+.modal.show {
+    will-change: auto;
+}
+
+/* Prevent flickering during theme transitions */
+body {
+    will-change: auto;
+}
+
+body.light-theme {
+    will-change: auto;
+}
+
+/* Optimize toast notifications */
+.toast {
+    will-change: transform, opacity;
+    transform: translateZ(0);
+}
+
+/* High performance button states */
+.btn:active {
+    will-change: auto;
+}
+
+/* Optimize table rendering */
+.expense-table tbody tr {
+    contain: content;
+}
+
+/* Prevent unnecessary repaints for navigation */
+.sidebar {
+    contain: layout;
+}
+
+.nav-menu {
+    contain: layout;
+}
+
+/* Debounce heavy animations */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation: none !important;
+        transition: none !important;
+    }
+}
+
+/* Optimize for mobile rendering */
+@media (max-width: 768px) {
+    body {
+        contain: layout;
+    }
+    
+    .pages-container {
+        contain: layout content;
+    }
+}
+
+/* GPU acceleration for smooth scrolling */
+body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Optimize text rendering */
+h1, h2, h3, h4, h5, h6,
+.btn,
+.nav-item {
+    text-rendering: optimizeLegibility;
+}
