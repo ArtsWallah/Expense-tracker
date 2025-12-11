@@ -14,8 +14,38 @@ const app = {
     sortColumn: 'date',
     sortOrder: 'desc',
     charts: {},
-    
-    // Initialize application
+    dashboardUpdateTimeout: null,
+    chartsUpdateTimeout: null,
+    cacheTimeout: 60000, // 60 seconds
+    lastUpdate: {},
+
+    // Utility: Debounce function to prevent excessive calls
+    debounce(func, delay) {
+        let timeoutId;
+        return function(...args) {
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(() => func.apply(this, args), delay);
+        };
+    },
+
+    // Utility: Cache API response with timeout
+    setCache(key, value) {
+        this.lastUpdate[key] = { value, timestamp: Date.now() };
+    },
+
+    // Utility: Get cached value if still fresh
+    getCache(key) {
+        const cached = this.lastUpdate[key];
+        if (cached && (Date.now() - cached.timestamp) < this.cacheTimeout) {
+            return cached.value;
+        }
+        return null;
+    },
+
+    // Utility: Clear cache for specific key
+    clearCache(key) {
+        delete this.lastUpdate[key];
+    },    // Initialize application
     init: async function() {
         console.log('🚀 Initializing Expense Tracker v2.0');
         
@@ -97,9 +127,10 @@ const app = {
         const expenseForm = document.getElementById('expenseForm');
         if (expenseForm) {
             expenseForm.addEventListener('submit', (e) => this.handleAddExpense(e));
-            // Real-time validation
-            expenseForm.addEventListener('change', () => this.validateForm());
-            expenseForm.addEventListener('input', () => this.validateForm());
+            // Debounce real-time validation (300ms)
+            const debouncedValidate = this.debounce(() => this.validateForm(), 300);
+            expenseForm.addEventListener('change', debouncedValidate);
+            expenseForm.addEventListener('input', debouncedValidate);
         }
         
         // File upload
@@ -108,10 +139,11 @@ const app = {
             receiptInput.addEventListener('change', (e) => this.handleFileUpload(e));
         }
         
-        // Search and filters
+        // Search and filters (with debouncing)
         const searchInput = document.getElementById('searchInput');
         if (searchInput) {
-            searchInput.addEventListener('input', () => this.filterExpenses());
+            const debouncedSearch = this.debounce(() => this.filterExpenses(), 300);
+            searchInput.addEventListener('input', debouncedSearch);
         }
         
         const categoryFilter = document.getElementById('categoryFilter');
@@ -146,10 +178,10 @@ const app = {
             quickAddForm.addEventListener('submit', (e) => this.handleQuickAdd(e));
         }
         
-        // Budget form
+        // Budget form (use debounced handler)
         const budgetForm = document.getElementById('budgetForm');
         if (budgetForm) {
-            budgetForm.addEventListener('submit', (e) => this.handleBudgetUpdate(e));
+            budgetForm.addEventListener('submit', (e) => debouncedBudgetUpdate(e));
         }
         
         // Date picker default to today

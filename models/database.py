@@ -57,7 +57,8 @@ DEFAULT_BUDGETS = {
     'Utilities': 150,
     'Healthcare': 100,
     'Others': 100,
-    'total': 1250
+    'total': 1250,
+    'monthly_limit': 0
 }
 
 

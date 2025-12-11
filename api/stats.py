@@ -87,6 +87,13 @@ def update_budgets():
                 except (ValueError, TypeError):
                     pass
         
+        # Update monthly limit if provided
+        if 'monthly_limit' in data:
+            try:
+                budgets['monthly_limit'] = float(data['monthly_limit'])
+            except (ValueError, TypeError):
+                pass
+        
         # Calculate total
         budgets['total'] = sum(budgets.get(cat, 0) for cat in CATEGORIES)
         

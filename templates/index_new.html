@@ -485,6 +485,19 @@
                     <div class="settings-section">
                         <h3><i class="fas fa-chart-line"></i> Monthly Budgets</h3>
                         <form id="budgetForm" class="budget-form">
+                            <!-- Monthly Budget Limit -->
+                            <div class="form-group" style="margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #334155;">
+                                <label for="monthlyBudgetLimit" style="display: block; margin-bottom: 8px; font-weight: 600;">
+                                    <i class="fas fa-bullseye"></i> Monthly Budget Limit
+                                </label>
+                                <div style="display: flex; gap: 10px;">
+                                    <input type="number" id="monthlyBudgetLimit" placeholder="Total monthly budget limit" step="0.01" min="0" style="flex: 1;">
+                                    <span style="padding: 8px 12px; background: #334155; border-radius: 4px; display: flex; align-items: center;">₹</span>
+                                </div>
+                                <small style="color: #94a3b8; margin-top: 4px;">Set a maximum amount to spend each month</small>
+                            </div>
+                            
+                            <!-- Category Budgets -->
                             <div class="budget-grid">
                                 <!-- Budget inputs will be populated here -->
                             </div>

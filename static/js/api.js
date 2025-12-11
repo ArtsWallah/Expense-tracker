@@ -275,9 +275,18 @@ async function handleQuickAdd(event) {
 
 // ===== BUDGET OPERATIONS =====
 
-async function handleBudgetUpdate(event) {
+// Create debounced budget update (500ms debounce)
+let budgetUpdateTimeout;
+function debouncedBudgetUpdate(event) {
     event.preventDefault();
+    clearTimeout(budgetUpdateTimeout);
     
+    budgetUpdateTimeout = setTimeout(() => {
+        handleBudgetUpdate(event);
+    }, 500);
+}
+
+async function handleBudgetUpdate(event) {
     const budgetData = {};
     const categories = ['Food', 'Transportation', 'Entertainment', 'Shopping', 'Utilities', 'Healthcare', 'Others'];
     
@@ -287,6 +296,12 @@ async function handleBudgetUpdate(event) {
             budgetData[cat] = parseFloat(input.value) || 0;
         }
     });
+    
+    // Add monthly limit if present
+    const monthlyLimitInput = document.getElementById('monthlyBudgetLimit');
+    if (monthlyLimitInput) {
+        budgetData.monthly_limit = parseFloat(monthlyLimitInput.value) || 0;
+    }
     
     try {
         const response = await fetch('/api/budgets', {
@@ -302,6 +317,9 @@ async function handleBudgetUpdate(event) {
         if (data.success) {
             app.budgets = data.data;
             app.saveData();
+            app.clearCache('stats'); // Clear dashboard cache to force refresh
+            app.clearCache('daily_chart');
+            app.clearCache('category_chart');
             showToast('Budgets updated successfully!', 'success');
             app.updateDashboard();
         } else {

@@ -7,31 +7,42 @@
 
 app.updateDashboard = async function() {
     try {
-        // Fetch stats
-        const response = await fetch('/api/stats');
-        const statsData = await response.json();
+        // Debounce dashboard update to prevent excessive fetches
+        clearTimeout(app.dashboardUpdateTimeout);
         
-        if (!statsData.success) {
-            console.error('Failed to fetch stats');
-            return;
-        }
-        
-        const stats = statsData.data;
-        
-        // Update summary cards
-        updateSummaryCards(stats);
-        
-        // Update budget progress
-        updateBudgetProgress(stats);
-        
-        // Update quick stats
-        updateQuickStats(stats);
-        
-        // Update charts
-        app.updateCharts();
+        app.dashboardUpdateTimeout = setTimeout(async () => {
+            try {
+                // Check cache first
+                const cachedStats = app.getCache('stats');
+                const stats = cachedStats || (await (await fetch('/api/stats')).json()).data;
+                
+                if (!stats) {
+                    console.error('Failed to fetch stats');
+                    return;
+                }
+                
+                // Cache the response
+                app.setCache('stats', stats);
+                
+                // Update summary cards
+                updateSummaryCards(stats);
+                
+                // Update budget progress
+                updateBudgetProgress(stats);
+                
+                // Update quick stats
+                updateQuickStats(stats);
+                
+                // Update charts (use separate debounce)
+                app.debouncedUpdateCharts();
+                
+            } catch (error) {
+                console.error('Error updating dashboard:', error);
+            }
+        }, 500); // 500ms debounce
         
     } catch (error) {
-        console.error('Error updating dashboard:', error);
+        console.error('Error in updateDashboard:', error);
     }
 };
 
@@ -65,7 +76,12 @@ function updateBudgetProgress(stats) {
     if (!budgetFill || !app.budgets.total) return;
     
     const monthlySpent = stats.total.this_month;
-    const monthlyBudget = app.budgets.total || 1;
+    
+    // Use monthly_limit if set, otherwise use total of category budgets
+    const monthlyBudget = (app.budgets.monthly_limit && app.budgets.monthly_limit > 0) 
+        ? app.budgets.monthly_limit 
+        : app.budgets.total || 1;
+    
     const percentage = Math.min(100, (monthlySpent / monthlyBudget) * 100);
     
     budgetFill.style.width = percentage + '%';
@@ -110,22 +126,43 @@ function updateQuickStats(stats) {
 
 // ===== CHARTS =====
 
+// Debounced chart update (1 second debounce)
+app.debouncedUpdateCharts = function() {
+    clearTimeout(app.chartsUpdateTimeout);
+    app.chartsUpdateTimeout = setTimeout(app.updateCharts, 1000);
+};
+
 app.updateCharts = async function() {
     try {
-        // Fetch chart data
-        const [dailyResponse, categoryResponse] = await Promise.all([
-            fetch('/api/stats/daily'),
-            fetch('/api/stats/category')
-        ]);
+        // Check cache first for chart data
+        const cachedDaily = app.getCache('daily_chart');
+        const cachedCategory = app.getCache('category_chart');
         
-        const dailyData = await dailyResponse.json();
-        const categoryData = await categoryResponse.json();
+        let dailyData, categoryData;
         
-        if (dailyData.success) {
+        // Only fetch if not cached
+        if (!cachedDaily || !cachedCategory) {
+            const [dailyResponse, categoryResponse] = await Promise.all([
+                fetch('/api/stats/daily'),
+                fetch('/api/stats/category')
+            ]);
+            
+            dailyData = cachedDaily || (await dailyResponse.json());
+            categoryData = cachedCategory || (await categoryResponse.json());
+            
+            // Cache the responses
+            if (dailyData.success) app.setCache('daily_chart', dailyData);
+            if (categoryData.success) app.setCache('category_chart', categoryData);
+        } else {
+            dailyData = cachedDaily;
+            categoryData = cachedCategory;
+        }
+        
+        if (dailyData && dailyData.success) {
             renderDailyChart(dailyData);
         }
         
-        if (categoryData.success) {
+        if (categoryData && categoryData.success) {
             renderCategoryChart(categoryData);
         }
     } catch (error) {
@@ -137,11 +174,6 @@ function renderDailyChart(data) {
     const ctx = document.getElementById('dailyChart');
     if (!ctx) return;
     
-    // Destroy existing chart
-    if (app.charts.daily) {
-        app.charts.daily.destroy();
-    }
-    
     if (!data.labels || data.labels.length === 0) {
         ctx.style.display = 'none';
         return;
@@ -149,55 +181,58 @@ function renderDailyChart(data) {
     
     ctx.style.display = 'block';
     
-    app.charts.daily = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: data.labels,
-            datasets: [{
-                label: 'Daily Spending',
-                data: data.data,
-                backgroundColor: '#3b82f6',
-                borderColor: '#2563eb',
-                borderWidth: 1,
-                borderRadius: 4,
-                hoverBackgroundColor: '#2563eb'
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: true,
-                    labels: {
-                        color: '#f1f5f9',
-                        font: { size: 12 }
+    // Reuse existing chart instead of destroying and recreating
+    if (app.charts.daily) {
+        app.charts.daily.data.labels = data.labels;
+        app.charts.daily.data.datasets[0].data = data.data;
+        app.charts.daily.update('none'); // 'none' skips animation for faster update
+    } else {
+        // Create chart only if it doesn't exist
+        app.charts.daily = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.labels,
+                datasets: [{
+                    label: 'Daily Spending',
+                    data: data.data,
+                    backgroundColor: '#3b82f6',
+                    borderColor: '#2563eb',
+                    borderWidth: 1,
+                    borderRadius: 4,
+                    hoverBackgroundColor: '#2563eb'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        labels: {
+                            color: '#f1f5f9',
+                            font: { size: 12 }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { color: '#94a3b8' },
+                        grid: { color: '#334155' }
+                    },
+                    x: {
+                        ticks: { color: '#94a3b8' },
+                        grid: { display: false }
                     }
                 }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: { color: '#94a3b8' },
-                    grid: { color: '#334155' }
-                },
-                x: {
-                    ticks: { color: '#94a3b8' },
-                    grid: { display: false }
-                }
             }
-        }
-    });
+        });
+    }
 }
 
 function renderCategoryChart(data) {
     const ctx = document.getElementById('categoryChart');
     if (!ctx) return;
-    
-    // Destroy existing chart
-    if (app.charts.category) {
-        app.charts.category.destroy();
-    }
     
     if (!data.labels || data.labels.length === 0) {
         ctx.style.display = 'none';
@@ -211,40 +246,49 @@ function renderCategoryChart(data) {
         '#8b5cf6', '#06b6d4', '#ec4899'
     ];
     
-    app.charts.category = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-            labels: data.labels,
-            datasets: [{
-                data: data.data,
-                backgroundColor: colors.slice(0, data.labels.length),
-                borderColor: '#1e293b',
-                borderWidth: 2
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                    labels: {
-                        color: '#f1f5f9',
-                        font: { size: 12 },
-                        padding: 15
-                    }
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            const value = formatCurrency(context.raw);
-                            return `${context.label}: ${value}`;
+    // Reuse existing chart instead of destroying and recreating
+    if (app.charts.category) {
+        app.charts.category.data.labels = data.labels;
+        app.charts.category.data.datasets[0].data = data.data;
+        app.charts.category.data.datasets[0].backgroundColor = colors.slice(0, data.labels.length);
+        app.charts.category.update('none'); // 'none' skips animation for faster update
+    } else {
+        // Create chart only if it doesn't exist
+        app.charts.category = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: data.labels,
+                datasets: [{
+                    data: data.data,
+                    backgroundColor: colors.slice(0, data.labels.length),
+                    borderColor: '#1e293b',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: '#f1f5f9',
+                            font: { size: 12 },
+                            padding: 15
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const value = formatCurrency(context.raw);
+                                return `${context.label}: ${value}`;
+                            }
                         }
                     }
                 }
             }
-        }
-    });
+        });
+    }
 }
 
 // ===== ANALYTICS PAGE =====
@@ -330,6 +374,12 @@ function loadBudgetsUI() {
             <input type="number" data-category="${category}" value="${app.budgets[category] || 0}" min="0" step="0.01">
         </div>
     `).join('');
+    
+    // Load monthly budget limit if exists
+    const monthlyLimitInput = document.getElementById('monthlyBudgetLimit');
+    if (monthlyLimitInput) {
+        monthlyLimitInput.value = app.budgets.monthly_limit || 0;
+    }
 }
 
 function loadWalletsUI() {
