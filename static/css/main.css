@@ -94,6 +94,9 @@ body {
     color: var(--text-primary);
     line-height: 1.6;
     transition: var(--transition);
+    overflow: hidden;
+    height: 100vh;
+    width: 100%;
 }
 
 /* ===== TYPOGRAPHY ===== */
@@ -240,6 +243,17 @@ a:hover {
     color: var(--text-primary);
     font-size: var(--text-xl);
     cursor: pointer;
+    padding: var(--space-md);
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-lg);
+    transition: var(--transition-fast);
+}
+
+.menu-toggle:hover {
+    background-color: var(--bg-tertiary);
 }
 
 .month-navigator {

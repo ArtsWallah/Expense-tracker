@@ -45,17 +45,35 @@ const app = {
             item.addEventListener('click', () => {
                 const page = item.getAttribute('data-page');
                 changePage(page);
+                
+                // Close mobile menu after selection
+                const navMenu = document.querySelector('.nav-menu');
+                if (navMenu && navMenu.classList.contains('open')) {
+                    navMenu.classList.remove('open');
+                }
             });
         });
         
         // Menu toggle (mobile)
         const menuToggle = document.getElementById('menuToggle');
         if (menuToggle) {
-            menuToggle.addEventListener('click', () => {
+            menuToggle.addEventListener('click', (e) => {
+                e.stopPropagation();
                 const navMenu = document.querySelector('.nav-menu');
                 navMenu.classList.toggle('open');
             });
         }
+        
+        // Close menu when clicking outside
+        document.addEventListener('click', (e) => {
+            const navMenu = document.querySelector('.nav-menu');
+            const sidebar = document.querySelector('.sidebar');
+            const menuToggle = document.getElementById('menuToggle');
+            
+            if (navMenu && !sidebar.contains(e.target) && !menuToggle?.contains(e.target)) {
+                navMenu.classList.remove('open');
+            }
+        });
         
         // Theme toggle
         const themeToggle = document.getElementById('themeToggle');
